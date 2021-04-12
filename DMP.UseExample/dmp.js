@@ -17,7 +17,7 @@ var dmp = {
   clientDateTimeUTC: userDateToUTC,
   url: document.URL,
   referrer: document.referrer,
-  ipAddress: "84.22.57.102",
+  ipAddress: sessionStorage.getItem("ip"),
   deviceLanguage: window.navigator.language,
   deviceScreenResolution: screen.width + "x" + screen.height,
   userAgentInfo: navigator.userAgent,
@@ -25,7 +25,7 @@ var dmp = {
   init: function (organizationId, userId) {
     this.organizationId = organizationId;
     this.userId = userId;
-    this.userDmpId = this.getUserIdFromCookie();
+    this.userDmpId = this.getUserIdFromLocalStorage();
   },
   logevent: function (eventType, contentInformation) {
     this.eventType = eventType;
@@ -55,7 +55,7 @@ var dmp = {
       DeviceLanguage: this.deviceLanguage,
       DeviceScreenResolution: this.deviceScreenResolution,
     };
-    console.log(eventDto);
+    // console.log(eventDto);
     $.ajax({
       url: "https://localhost:44355/api/Event",
       type: "POST",
@@ -69,41 +69,22 @@ var dmp = {
       },
     });
   },
-  Console: function () {
-    console.log(
-      this.organizationId,
-      this.userId,
-      this.eventType,
-      this.contentImage
-    );
-  },
-  setCookie: function (name, value, days) {
-    var expires = "";
-    if (days) {
-      var date = new Date();
-      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/";
-  },
-  getCookie: function (name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(";");
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) == " ") c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-  },
-  getUserIdFromCookie: function () {
-    var userDmpId = this.getCookie("userDmpId");
+  // Console: function () {
+  //   console.log(
+  //     this.organizationId,
+  //     this.userId,
+  //     this.eventType,
+  //     this.contentImage
+  //   );
+  // },
+  getUserIdFromLocalStorage: function () {
+    var userDmpId = window.localStorage.getItem("userDmpId");
     if (userDmpId != null) {
-      return this.getCookie("userDmpId");
+      return userDmpId;
     } else {
       var guidGenerated = uuidv4();
-      this.setCookie("userDmpId", guidGenerated, 1);
-      return this.getCookie("userDmpId");
+      window.localStorage.setItem("userDmpId", guidGenerated);
+      return window.localStorage.getItem("userDmpId");
     }
   },
 };
@@ -120,7 +101,7 @@ function useDMP(imageUrl) {
     author: "JK",
   };
   dmp.logevent("imageClick", contentInformation);
-  dmp.Console();
+  // dmp.Console();
 }
 
 function uuidv4() {
